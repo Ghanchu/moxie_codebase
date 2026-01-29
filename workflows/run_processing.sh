@@ -88,6 +88,9 @@ case "$DEVICE" in
     "Audio")
         PYTHON_SCRIPT="$SCRIPT_DIR/process_audio_${MODALITY}.py"
         ;;
+    "Research_Ring")
+        PYTHON_SCRIPT="$SCRIPT_DIR/process_research_ring_${MODALITY}.py"
+        ;;
     *)
         echo "Error: Unknown device '$DEVICE'"
         exit 1
@@ -115,6 +118,9 @@ elif [ "$DEVICE" == "hexoskin" ]; then
 
 elif [ "$DEVICE" == "Audio" ]; then
     CMD="$CMD --wav_file \"$FILE_PATH\""
+elif [ "$DEVICE" == "Research_Ring" ]; then
+    # Research Ring processing (if any) can be added here
+    CMD="$CMD --ring_path \"$FILE_PATH\""
 fi
 
 # Append output directory argument
