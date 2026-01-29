@@ -4,7 +4,7 @@ import glob
 import argparse
 
 # Configuration
-DATA_ROOT = r"N:\Aditya\Participant Data"
+DATA_ROOT = r'/Volumes/lsa-annelism1/Aditya/Participant Data'
 # Save to repository root (one level up from utils)
 OUTPUT_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "processing_catalog.csv")
 
@@ -71,14 +71,18 @@ def scan_participants_modality_based(root_dir):
                 # --- THOUGHT LISTING ---
                 thought_path = os.path.join(visit_path, "Thought Listing")
                 if os.path.exists(thought_path):
-                    # Find all .wav files
-                    wav_files = glob.glob(os.path.join(thought_path, "*.wav"))
+                    # Find all .wav files (case-insensitive)
+                    wav_files = []
+                    for file in os.listdir(thought_path):
+                        if file.lower().endswith('.wav'):
+                            wav_files.append(os.path.join(thought_path, file))
+                    
                     for wav_file in wav_files:
                         catalog_data.append({
                             "participant_id": pid,
                             "visit_type": visit,
                             "device": "Audio",
-                            "modality": "Thoughts",
+                            "modality": "thoughts",
                             "file_path": wav_file
                         })
 

@@ -85,6 +85,9 @@ case "$DEVICE" in
     "hexoskin")
         PYTHON_SCRIPT="$SCRIPT_DIR/process_hexoskin_${MODALITY}.py"
         ;;
+    "Audio")
+        PYTHON_SCRIPT="$SCRIPT_DIR/process_audio_${MODALITY}.py"
+        ;;
     *)
         echo "Error: Unknown device '$DEVICE'"
         exit 1
@@ -109,6 +112,9 @@ if [ "$DEVICE" == "acq" ]; then
 elif [ "$DEVICE" == "hexoskin" ]; then
     # Hexoskin scripts expect --hex_path (which handles dir or file now)
     CMD="$CMD --hex_path \"$FILE_PATH\""
+
+elif [ "$DEVICE" == "Audio" ]; then
+    CMD="$CMD --wav_file \"$FILE_PATH\""
 fi
 
 # Append output directory argument
