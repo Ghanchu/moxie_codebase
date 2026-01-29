@@ -4,7 +4,7 @@ import glob
 import argparse
 
 # Configuration
-DATA_ROOT = r'/Volumes/lsa-annelism1/Aditya/Participant Data'
+DATA_ROOT = r'/Volumes/lsa-annelism/MOXIE_Study/Participant Data'
 # Save to repository root (one level up from utils)
 OUTPUT_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "processing_catalog.csv")
 
@@ -85,6 +85,36 @@ def scan_participants_modality_based(root_dir):
                             "modality": "thoughts",
                             "file_path": wav_file
                         })
+                # --- RESEARCH RING ---
+                research_ring_string = None
+                if visit == "TSST Visit":
+                    research_ring_string = "TSST_Research_Ring"
+                elif visit == "PDST Visit":
+                    research_ring_string = "PDST_Research_Ring"
+
+                if research_ring_string:
+                    # Look for folders inside visit_path that start with research_ring_string
+                    matching_folders = [
+                        os.path.join(visit_path, f)
+                        for f in os.listdir(visit_path)
+                        if os.path.isdir(os.path.join(visit_path, f)) and f.startswith(research_ring_string)
+                    ]
+                    
+                    if matching_folders:
+                        # Take the first one (or handle multiple if needed)
+                        final_research_ring_folder = matching_folders[0]
+                        # Optionally add it to the catalog
+                        modalities = ['eda', 'ppg', 'temp']
+                        for mod in modalities:
+                            catalog_data.append({
+                                "participant_id": pid,
+                                "visit_type": visit,
+                                "device": "Research_Ring",
+                                "modality": mod,
+                                "file_path": final_research_ring_folder
+                            })
+                    
+
 
     return pd.DataFrame(catalog_data)
 
