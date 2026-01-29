@@ -103,16 +103,24 @@ def scan_participants_modality_based(root_dir):
                     if matching_folders:
                         # Take the first one (or handle multiple if needed)
                         final_research_ring_folder = matching_folders[0]
+                        signal_files_folder = os.path.join(final_research_ring_folder, "signal_files")
+                        final_folder = [
+                            os.path.join(signal_files_folder, d)
+                            for d in os.listdir(signal_files_folder)
+                            if os.path.isdir(os.path.join(signal_files_folder, d)) and d.startswith("Senstream")
+                        ]
                         # Optionally add it to the catalog
-                        modalities = ['eda', 'ppg', 'temp']
-                        for mod in modalities:
-                            catalog_data.append({
-                                "participant_id": pid,
-                                "visit_type": visit,
-                                "device": "Research_Ring",
-                                "modality": mod,
-                                "file_path": final_research_ring_folder
-                            })
+                        if final_folder:
+                            final_research_ring_folder = final_folder[0]
+                            modalities = ['eda', 'ppg', 'temp']
+                            for mod in modalities:
+                                catalog_data.append({
+                                    "participant_id": pid,
+                                    "visit_type": visit,
+                                    "device": "Research_Ring",
+                                    "modality": mod,
+                                    "file_path": final_research_ring_folder
+                                })
                     
 
 
