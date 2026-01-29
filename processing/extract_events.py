@@ -3,6 +3,36 @@ import pandas as pd
 import numpy as np
 import argparse
 import os
+from datetime import datetime, timedelta
+import re
+
+def extract_unix_time(line: str) -> float:
+    """
+    Extracts the timestamp from a line starting with 'Segment'
+    and converts it to Unix time (UTC), assuming the time is in EST.
+    
+    Example input:
+    "Segment 1 Thu Sep 4 2025 09:47:13.689, MP160 001EE4",0.0,0,Marker
+    """
+    # Regex to match the timestamp (Thu Sep 4 2025 09:47:13.689)
+    match = re.search(r'\b[A-Z][a-z]{2} [A-Z][a-z]{2} \d{1,2} \d{4} \d{2}:\d{2}:\d{2}\.\d{3}', line)
+    if not match:
+        raise ValueError("No timestamp found in line")
+    
+    timestamp_str = match.group(0)
+    
+    # Parse the string into a datetime object
+    dt_naive = datetime.strptime(timestamp_str, "%a %b %d %Y %H:%M:%S.%f")
+    
+    # EST offset is UTC-5
+    est_offset = timedelta(hours=-5)
+    
+    # Convert to UTC
+    dt_utc = dt_naive - est_offset
+    
+    # Return Unix time
+    return dt_utc.timestamp()
+
 
 def extract_events(acq_file, output_dir):
     print(f"Reading {acq_file}...")
@@ -14,12 +44,13 @@ def extract_events(acq_file, output_dir):
     if hasattr(data, 'event_markers') and data.event_markers:
         print(f"Found {len(data.event_markers)} text markers.")
         fs = data.channels[0].samples_per_second if data.channels else 2000.0
-
-        for m in data.event_markers:
-            # Skip unwanted markers
+        unix_time = None
+        for i, m in enumerate(data.event_markers):
+            if i==0:
+                unix_time = extract_unix_time(m.text)
             if m.text is None:
                 continue
-            if m.text.startswith("ME") or m.text.startswith("NBP"):
+            if m.text.startswith("ME") or m.text.startswith("NBP") or m.text.startswith("BPI"):
                 continue  # Skip markers starting with ME or NBP
 
             # Clean label
@@ -29,7 +60,7 @@ def extract_events(acq_file, output_dir):
 
             events_list.append({
                 "event_label": label,
-                "start_time": start_time,
+                "start_time": start_time + unix_time,
                 "duration": 0,  # Point event by default
                 "source_channel": "Marker"
             })
