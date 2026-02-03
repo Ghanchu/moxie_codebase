@@ -6,32 +6,29 @@ import os
 from datetime import datetime, timedelta
 import re
 
+from datetime import datetime
+from zoneinfo import ZoneInfo
+import re
+
 def extract_unix_time(line: str) -> float:
-    """
-    Extracts the timestamp from a line starting with 'Segment'
-    and converts it to Unix time (UTC), assuming the time is in EST.
-    
-    Example input:
-    "Segment 1 Thu Sep 4 2025 09:47:13.689, MP160 001EE4",0.0,0,Marker
-    """
-    # Regex to match the timestamp (Thu Sep 4 2025 09:47:13.689)
-    match = re.search(r'\b[A-Z][a-z]{2} [A-Z][a-z]{2} \d{1,2} \d{4} \d{2}:\d{2}:\d{2}\.\d{3}', line)
+    match = re.search(
+        r'\b[A-Z][a-z]{2} [A-Z][a-z]{2} \d{1,2} \d{4} \d{2}:\d{2}:\d{2}\.\d{3}',
+        line
+    )
     if not match:
         raise ValueError("No timestamp found in line")
-    
+
     timestamp_str = match.group(0)
-    
-    # Parse the string into a datetime object
-    dt_naive = datetime.strptime(timestamp_str, "%a %b %d %Y %H:%M:%S.%f")
-    
-    # EST offset is UTC-5
-    est_offset = timedelta(hours=-5)
-    
-    # Convert to UTC
-    dt_utc = dt_naive - est_offset
-    
-    # Return Unix time
-    return dt_utc.timestamp()
+
+    dt_naive = datetime.strptime(
+        timestamp_str, "%a %b %d %Y %H:%M:%S.%f"
+    )
+
+    # Attach Eastern Time zone (handles EST/EDT correctly)
+    dt_et = dt_naive.replace(tzinfo=ZoneInfo("America/New_York"))
+
+    return dt_et.timestamp()
+
 
 
 def extract_events(acq_file, output_dir):
